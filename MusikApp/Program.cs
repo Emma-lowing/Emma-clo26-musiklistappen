@@ -37,9 +37,18 @@ while(kör)
     switch (val)
     {
         case "1":
-            Console.WriteLine("Här ska låtarna visas.");
-            break;
+            {
+                List<Song> songs = db.GetAllSongs();
 
+                Console.WriteLine("\n=== Låtlista ===");
+
+                foreach (Song song in songs)
+                {
+                    Console.WriteLine($"{song.Id}. {song.Title} – {song.DurationSeconds} sekunder");
+                }
+
+                break;
+            }
         case "2":
             Console.WriteLine("Här ska en låt läggas till.");
             break;
