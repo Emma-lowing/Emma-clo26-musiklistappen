@@ -97,8 +97,46 @@ while(kör)
             }
 
         case "3":
-            Console.WriteLine("Här ska en låt tas bort.");
-            break;
+            {
+                Console.Write("Ange låtens ID: ");
+
+                int id;
+                while (!int.TryParse(Console.ReadLine(), out id))
+                {
+                    Console.Write("Skriv ett heltal: ");
+                }
+
+                Song? song = db.GetSongById(id);
+
+                if (song == null)
+                {
+                    Console.WriteLine($"Ingen låt med ID {id} hittades.");
+                }
+                else
+                {
+                    Console.Write($"Ta bort '{song.Title}'? (j/n): ");
+                    string svar = (Console.ReadLine() ?? "").Trim().ToLower();
+
+                    if (svar == "j")
+                    {
+                      bool deleted = db.DeleteSong(id);
+                        if (deleted)
+                        {
+                            Console.WriteLine("Låten togs bort.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ingen låt togs bort.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Borttagningen avbröts.");
+                    }
+                }
+
+                break;
+            }
 
         case "4":
             kör = false;

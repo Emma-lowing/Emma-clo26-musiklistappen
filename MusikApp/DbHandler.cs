@@ -89,11 +89,36 @@ public class DbHandler
     }
 
     /// <summary>Hämtar en specifik låt. Returnerar null om den inte finns.</summary>
-    public Song? GetSongById(int id)
+        public Song? GetSongById(int id)
     {
-        // TODO: SELECT ... WHERE Id = @id (parameter!).
-        // TODO: if (reader.Read()) { ... } annars returnera null.
-        throw new NotImplementedException();
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT id, title, duration_seconds, album_id FROM Songs WHERE id = @id";
+        command.Parameters.AddWithValue("@id", id);
+
+        using var reader = command.ExecuteReader();
+
+        if (reader.Read())
+        {
+            int durationSeconds = 0;
+
+            if (!reader.IsDBNull(2))
+            {
+                durationSeconds = reader.GetInt32(2);
+            }
+
+            return new Song
+            {
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                DurationSeconds = durationSeconds,
+                AlbumId = reader.GetInt32(3)
+            };
+        }
+
+        return null;
     }
 
     /// <summary>Söker låtar där titeln innehåller söktexten.</summary>
@@ -128,10 +153,20 @@ VALUES (@title, @durationSeconds, @albumId);
     /// <summary>Tar bort en låt. Returnerar true om en rad faktiskt togs bort.</summary>
     public bool DeleteSong(int id)
     {
-        // TODO: DELETE FROM ... WHERE Id = @id.
-        // Tips: ExecuteNonQuery() returnerar antalet påverkade rader.
-        // Menyn i Program.cs ska fråga "Är du säker? j/n" innan den här metoden anropas.
-        throw new NotImplementedException();
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.Parameters.AddWithValue("@id", id);
+        command.CommandText = "DELETE FROM SongGenres WHERE song_id = @id";
+        command.ExecuteNonQuery();
+
+        command.CommandText = "DELETE FROM Songs WHERE id = @id";
+        int deletedRows = command.ExecuteNonQuery();
+        transaction.Commit();
+        return deletedRows > 0;
     }
 
     // ---------------------------------------------------------------
