@@ -35,7 +35,8 @@ public class DbHandler
     // ---------------------------------------------------------------
 
     /// <summary>Hämtar alla låtar, sorterade på titel.</summary>
-    //Metod GetAllSongs
+    
+    //Metod GetAllSongs som hämtar alla låtar från databasen och returnerar dem som en lista av Song-objekt
     public List<Song> GetAllSongs()
     {
         var songs = new List<Song>();
@@ -71,6 +72,22 @@ public class DbHandler
         return songs;
     }
 
+
+    //Kontroll om album existerar
+    public bool AlbumExists(int albumId)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM Albums WHERE id = @albumId";
+        command.Parameters.AddWithValue("@albumId", albumId);
+
+        long count = (long)command.ExecuteScalar()!;
+
+        return count > 0;
+    }
+
     /// <summary>Hämtar en specifik låt. Returnerar null om den inte finns.</summary>
     public Song? GetSongById(int id)
     {
@@ -88,11 +105,24 @@ public class DbHandler
     }
 
     /// <summary>Lägger till en ny låt.</summary>
+    /// 
+
+    //AddSong-metoden som lägger till en ny låt i databasen
     public void AddSong(Song song)
     {
-        // TODO: INSERT INTO ... VALUES (@titel, @langd, ...) med parametrar.
-        // Tips: INSERT ger ingen data tillbaka, så använd ExecuteNonQuery().
-        throw new NotImplementedException();
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+INSERT INTO Songs (title, duration_seconds, album_id)
+VALUES (@title, @durationSeconds, @albumId);
+""";
+        command.Parameters.AddWithValue("@title", song.Title);
+        command.Parameters.AddWithValue("@durationSeconds", song.DurationSeconds);
+        command.Parameters.AddWithValue("@albumId", song.AlbumId);
+
+        command.ExecuteNonQuery();
     }
 
     /// <summary>Tar bort en låt. Returnerar true om en rad faktiskt togs bort.</summary>

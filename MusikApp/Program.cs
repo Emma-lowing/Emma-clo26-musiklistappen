@@ -50,8 +50,51 @@ while(kör)
                 break;
             }
         case "2":
-            Console.WriteLine("Här ska en låt läggas till.");
-            break;
+            {
+                Console.Write("Ange låtens titel: ");
+                string title = Console.ReadLine() ?? "";
+
+                Console.Write("Ange längd i sekunder: ");
+                int durationSeconds;
+
+                while (!int.TryParse(Console.ReadLine(), out durationSeconds))
+                {
+                    Console.Write("Skriv ett heltal, exempelvis 235: ");
+                }
+
+                int albumId;
+
+                while (true)
+                {
+                    Console.Write("Ange albumets ID: ");
+
+                    if (!int.TryParse(Console.ReadLine(), out albumId))
+                    {
+                        Console.WriteLine("Skriv ett heltal.");
+                        continue;
+                    }
+
+                    if (!db.AlbumExists(albumId))
+                    {
+                        Console.WriteLine("Det albumet finns inte. Försök igen.");
+                        continue;
+                    }
+
+                    break;
+                }
+
+                var song = new Song
+                {
+                    Title = title,
+                    DurationSeconds = durationSeconds,
+                    AlbumId = albumId
+                };
+
+                db.AddSong(song);
+                Console.WriteLine("Låt sparad!");
+
+                break;
+            }
 
         case "3":
             Console.WriteLine("Här ska en låt tas bort.");
