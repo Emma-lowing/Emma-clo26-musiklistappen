@@ -35,12 +35,40 @@ public class DbHandler
     // ---------------------------------------------------------------
 
     /// <summary>Hämtar alla låtar, sorterade på titel.</summary>
+    //Metod GetAllSongs
     public List<Song> GetAllSongs()
     {
-        // TODO: SELECT från din låt-tabell med ORDER BY.
-        // TODO: loopa med reader.Read() och gör ett Song-objekt av varje rad.
-        // Tips: reader.GetInt32(0), reader.GetString(1) ... eller reader["Titel"].
-        throw new NotImplementedException();
+        var songs = new List<Song>();
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT id, title, duration_seconds, album_id FROM Songs ORDER BY title";
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            int durationSeconds = 0;
+
+            if (!reader.IsDBNull(2))
+            {
+                durationSeconds = reader.GetInt32(2);
+            }
+
+            var song = new Song
+            {
+                Id = reader.GetInt32(0),
+                Title = reader.GetString(1),
+                DurationSeconds = durationSeconds,
+                AlbumId = reader.GetInt32(3)
+            };
+
+            songs.Add(song);
+        }
+
+        return songs;
     }
 
     /// <summary>Hämtar en specifik låt. Returnerar null om den inte finns.</summary>
