@@ -29,7 +29,8 @@ while(kör)
     Console.WriteLine("1. Visa alla låtar");
     Console.WriteLine("2. Lägg till en låt");
     Console.WriteLine("3. Ta bort en låt");
-    Console.WriteLine("4. Avsluta");
+    Console.WriteLine("4. Visa låtar med album");
+    Console.WriteLine("5. Avsluta");
     Console.Write("Välj: ");
 
     string val = Console.ReadLine() ?? "";
@@ -137,8 +138,18 @@ while(kör)
 
                 break;
             }
-
         case "4":
+            {
+                var songsWithAlbums = db.GetSongsWithAlbum();
+                Console.WriteLine("\n=== Låtar med album ===");
+                foreach (var songWithAlbum in songsWithAlbums)
+                {
+                    Console.WriteLine($"{songWithAlbum.SongTitle} – {songWithAlbum.AlbumName}");
+                }
+            }
+            break;
+
+        case "5":
             kör = false;
             break;
 

@@ -176,8 +176,28 @@ VALUES (@title, @durationSeconds, @albumId);
     /// <summary>(VG, alternativ A) Låtar tillsammans med albumets namn. Kräver en JOIN.</summary>
     public List<(string SongTitle, string AlbumName)> GetSongsWithAlbum()
     {
+        var songWithAlbums = new List<(string SongTitle, string AlbumName)>();
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT Songs.title, Albums.title
+FROM Songs
+JOIN Albums ON Songs.album_id = Albums.id
+ORDER BY Albums.title, Songs.title;
+""";
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            string songTitle = reader.GetString(0);
+            string albumName = reader.GetString(1);
+
+            songWithAlbums.Add((songTitle, albumName));
+        }
+        return songWithAlbums;
         // TODO: SELECT Låtar.Titel, Album.Namn FROM Låtar JOIN Album ON ... ORDER BY ...
-        throw new NotImplementedException();
+
     }
 
     /// <summary>(VG, alternativ B) Låtar som är längre än medellängden. Kräver en subquery.</summary>
